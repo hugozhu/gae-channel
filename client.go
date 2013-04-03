@@ -2,6 +2,7 @@ package channel
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,18 +13,20 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	// "time"
 )
 
-func NewChannel(token_url string, key string) (c *Channel) {
+func NewChannel(token_url string) (c *Channel) {
 	c = &Channel{
-		Key:           key,
 		URL_Get_Token: token_url,
 		User_Agent:    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
 		Params: map[string]string{
 			"host": strconv.Itoa(rand.Intn(1000)),
 		},
-		Client: &http.Client{},
+		Client: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return errors.New("no redirects allowed.")
+			},
+		},
 		Scookie: &http.Cookie{
 			Name:  "S",
 			Value: "",
@@ -36,8 +39,8 @@ func NewChannel(token_url string, key string) (c *Channel) {
 }
 
 func (c *Channel) Open() *ChannelSocket {
-	c.Params["token"] = "AHRlWrro9TogEkPeXEw9j83vmfAifc7yBVr3eB1Oxc0emL3gmUvkSTUfbcX-tamH6m6Owj9zaTUicR0Sr31UkmABk4PBrdjwOg"
-	//	c.Params["token"] = c.NewToken()
+	c.Params["token"] = "AHRlWrqTaZ-9ngbmixSTXRJZ_RnwuzQiEGSn67mVpOzJyNJU66qrcsrcNQPj7LKkNlb6b9mz1eknfnD8mXoYsb39ncTMdUhKZA"
+	//c.Params["token"] = c.NewToken()
 
 	c.Handler = &ChannelSocket{
 		OnOpened:  func() {},
@@ -64,7 +67,7 @@ func (c *Channel) Open() *ChannelSocket {
 }
 
 func (c *Channel) NewToken() string {
-	url := c.URL_Get_Token + c.Key
+	url := c.URL_Get_Token
 	resp := c.HttpCall(url, nil)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -184,9 +187,9 @@ func (c *Channel) register_new_conneciton() {
 
 	resp := c.HttpCall("http://${host}.talkgadget.google.com/talkgadget/dch/bind?VER=8&clid=${clid}&gsessionid=${gsessionid}&prop=data&token=${token}&ec=%5B%22ci%3Aec%22%5D&SID=${SID}&RID=${RID}&AID=${AID}&zx=${zx}&t=1", strings.NewReader(postfields.Encode()))
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	// body, _ := ioutil.ReadAll(resp.Body)
 	c.Handler.OnOpened()
-	log.Println("register_new_conneciton response:\n", string(body))
+	// log.Println("register_new_conneciton response:\n", string(body))
 }
 
 func (c *Channel) Ping() {
@@ -224,6 +227,7 @@ func (c *Channel) receive() {
 			bytes, _, err := reader.ReadLine()
 			if err != nil {
 				if err == io.EOF {
+					log.Println("server side closed connection, reconnecting ...")
 					break
 				} else {
 					c.Handler.OnError(err)

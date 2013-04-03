@@ -20,6 +20,19 @@ func (e *Message) HasChild() bool {
 	return e.Child != nil
 }
 
+func (e *Message) Level() int {
+	level := 1
+	a := e.Child
+	for {
+		if a == nil {
+			break
+		}
+		level++
+		a = a.Child
+	}
+	return level
+}
+
 func (e *Message) ToString() string {
 	s := ""
 	if e.Key != "" {

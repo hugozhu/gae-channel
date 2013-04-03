@@ -61,6 +61,7 @@ handlers:
 package main
 
 import (
+    "encoding/json"
     . "github.com/hugozhu/gae-channel"
     "log"
 )
@@ -68,7 +69,8 @@ import (
 func main() {
     log.Println("started")
     stop_chan := make(chan bool)
-    channel := NewChannel("http://<your_app_name>.appspot.com/new_token")
+
+    channel := NewChannel("http://app.myalert.info/online_get_token?id=pi")
     socket := channel.Open()
     socket.OnOpened = func() {
         log.Println("socket opened!")
@@ -80,7 +82,18 @@ func main() {
     }
 
     socket.OnMessage = func(msg *Message) {
-        log.Println(msg.ToString())
+        if msg.Level() >= 3 && msg.Child.Key == "c" {
+            v1 := *msg.Child.Child.Val
+            if len(v1) > 0 {
+                s := "[" + v1[0].Key + "]"
+                var v []string
+                json.Unmarshal([]byte(s), &v)
+                if len(v) == 2 && v[0] == "ae" {
+                    s = v[1]
+                    log.Println(s) //what really intersting
+                }
+            }
+        }
     }
 
     socket.OnError = func(err error) {
@@ -90,3 +103,7 @@ func main() {
     <-stop_chan
 }
 ```
+
+# See also
+
+1. http://hugozhu.myalert.info/2013/04/03/24-google-channel-service.html
