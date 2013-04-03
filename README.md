@@ -70,7 +70,7 @@ func main() {
     log.Println("started")
     stop_chan := make(chan bool)
 
-    channel := NewChannel("http://app.myalert.info/online_get_token?id=pi")
+    channel := NewChannel("http://<your_app_id>.appspot.com/new_token")
     socket := channel.Open()
     socket.OnOpened = func() {
         log.Println("socket opened!")
