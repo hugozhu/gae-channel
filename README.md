@@ -5,6 +5,7 @@ Google App Engine  Channel Service Client Implemented in Golang
 
 # Setup a channel service on GAE
 
+hello.go
 ```
 package hello
 
@@ -42,9 +43,20 @@ func handler_new_token(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+app.yaml
+
+```
+application: <your_app_name>
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: (/.*)
+  script: _go_app
+```
 
 # Sample Client code
-
 ```
 package main
 
