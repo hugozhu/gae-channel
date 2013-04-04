@@ -40,7 +40,7 @@ func NewChannel(token_url string) (c *Channel) {
 
 func (c *Channel) Open() *ChannelSocket {
 	c.Params["token"] = "AHRlWrqTaZ-9ngbmixSTXRJZ_RnwuzQiEGSn67mVpOzJyNJU66qrcsrcNQPj7LKkNlb6b9mz1eknfnD8mXoYsb39ncTMdUhKZA"
-	//c.Params["token"] = c.NewToken()
+	c.Params["token"] = c.NewToken()
 
 	c.Handler = &ChannelSocket{
 		OnOpened:  func() {},
