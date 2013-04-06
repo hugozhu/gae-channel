@@ -39,6 +39,12 @@ func NewChannel(token_url string) (c *Channel) {
 }
 
 func (c *Channel) Open() *ChannelSocket {
+	defer func() {
+		if err := recover(); err != nil {
+			c.Handler.OnError(err)
+		}
+	}()
+
 	c.Params["token"] = "AHRlWrqTaZ-9ngbmixSTXRJZ_RnwuzQiEGSn67mVpOzJyNJU66qrcsrcNQPj7LKkNlb6b9mz1eknfnD8mXoYsb39ncTMdUhKZA"
 	c.Params["token"] = c.NewToken()
 
@@ -213,6 +219,7 @@ func (c *Channel) Ping() {
 }
 
 func (c *Channel) receive() {
+	defer c.Handler.OnClose()
 	for {
 		c.rid++
 		c.Params["RID"] = fmt.Sprintf("%d", c.rid)
@@ -263,5 +270,4 @@ func (c *Channel) receive() {
 			}
 		}
 	}
-	c.Handler.OnClose()
 }
