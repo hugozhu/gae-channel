@@ -41,7 +41,7 @@ func NewChannel(token_url string) (c *Channel) {
 func (c *Channel) Open() *ChannelSocket {
 	defer func() {
 		if err := recover(); err != nil {
-			c.Handler.OnError(err)
+			c.Handler.OnError(errors.New(fmt.Sprintf("%s", err)))
 		}
 	}()
 
