@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func timeoutDialler(timeout time.Duration) func(net, addr string) (c net.Conn, err error) {
@@ -32,6 +33,7 @@ func timeoutDialler(timeout time.Duration) func(net, addr string) (c net.Conn, e
 }
 
 func NewChannel(token_url string) (c *Channel) {
+	rand.Seed(int64(time.Now().Nanosecond()))
 	c = &Channel{
 		URL_Get_Token: token_url,
 		User_Agent:    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
@@ -97,7 +99,8 @@ func (c *Channel) NewToken() string {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	token := strings.TrimSpace(string(body))
-	log.Println("new token", token)
+	log.Println("new token:", token)
+	log.Println("remote host:", c.Params["host"])
 	c.Params["token"] = token
 
 	c.rid = 0
