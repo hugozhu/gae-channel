@@ -8,12 +8,28 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 )
+
+func timeoutDialler(timeout time.Duration) func(net, addr string) (c net.Conn, err error) {
+	return func(netw, addr string) (net.Conn, error) {
+		c, err := net.DialTimeout(netw, addr, timeout)
+		if err != nil {
+			return nil, err
+		}
+		deadline := time.Now().Add(timeout)
+		err = c.SetDeadline(deadline)
+		if err != nil {
+			return nil, err
+		}
+		return c, nil
+	}
+}
 
 func NewChannel(token_url string) (c *Channel) {
 	c = &Channel{
@@ -25,6 +41,9 @@ func NewChannel(token_url string) (c *Channel) {
 		Client: &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return errors.New("no redirects allowed.")
+			},
+			Transport: &http.Transport{
+				Dial: timeoutDialler(5 * time.Second),
 			},
 		},
 		Scookie: &http.Cookie{
