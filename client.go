@@ -45,7 +45,7 @@ func NewChannel(token_url string) (c *Channel) {
 				return errors.New("no redirects allowed.")
 			},
 			Transport: &http.Transport{
-				Dial: timeoutDialler(5 * time.Second),
+				Dial: timeoutDialler(10 * time.Minute),
 			},
 		},
 		Scookie: &http.Cookie{
